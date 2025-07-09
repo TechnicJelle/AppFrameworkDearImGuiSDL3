@@ -47,13 +47,13 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void* appstate) {
 	MyAppState* myAppState = static_cast<MyAppState*>(appstate);
-	const char* message = "Hello World!";
-	int w = 0, h = 0;
-	constexpr float scale = 4.0f;
 
 	/* Center the message and scale it up */
+	int w = 0, h = 0;
 	SDL_GetRenderOutputSize(myAppState->renderer, &w, &h);
+	constexpr float scale = 4.0f;
 	SDL_SetRenderScale(myAppState->renderer, scale, scale);
+	const char* message = "Hello World!";
 	const float x = (static_cast<float>(w) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
 	const float y = (static_cast<float>(h) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
 
