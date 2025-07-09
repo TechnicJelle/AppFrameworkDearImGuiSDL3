@@ -12,11 +12,18 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
 	MyAppState* myAppState = new MyAppState();
 	*appstate = myAppState;
 
-	constexpr SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE;
-	if (!SDL_CreateWindowAndRenderer("Hello World", 1280, 720, flags, &myAppState->window, &myAppState->renderer)) {
+	constexpr SDL_WindowFlags flags = SDL_WINDOW_TRANSPARENT | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALWAYS_ON_TOP;
+	if (!SDL_CreateWindowAndRenderer("Hello World", 1, 1, flags, &myAppState->window, &myAppState->renderer)) {
 		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
+	SDL_Surface* surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+	if (!SDL_SetWindowShape(myAppState->window, surface)) {
+		SDL_Log("Couldn't set window shape: %s", SDL_GetError());
+		SDL_DestroySurface(surface);
+		return SDL_APP_FAILURE;
+	}
+	SDL_DestroySurface(surface);
 
 	return SDL_APP_CONTINUE;
 }
@@ -49,6 +56,21 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	SDL_SetRenderScale(myAppState->renderer, scale, scale);
 	const float x = (static_cast<float>(w) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
 	const float y = (static_cast<float>(h) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
+
+	SDL_Surface* surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
+	constexpr int div = 3;
+	const SDL_Rect aroundText = {
+		w / div * 1, h / div * 1,
+		w / div * (div-2), h / div * (div-2),
+	};
+	SDL_ClearSurface(surface, 0.0f, 0.0f, 0.0f, 0.0f);
+	SDL_FillSurfaceRect(surface, &aroundText, SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_GetWindowPixelFormat(myAppState->window)), nullptr, 255, 255, 255, 255));
+	if (!SDL_SetWindowShape(myAppState->window, surface)) {
+		SDL_Log("Couldn't set window shape: %s", SDL_GetError());
+		SDL_DestroySurface(surface);
+		return SDL_APP_FAILURE;
+	}
+	SDL_DestroySurface(surface);
 
 	/* Draw the message */
 	SDL_SetRenderDrawColor(myAppState->renderer, 0, 0, 0, 255);
