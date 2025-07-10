@@ -53,30 +53,47 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	SDL_GetRenderOutputSize(myAppState->renderer, &w, &h);
 	constexpr float scale = 4.0f;
 	SDL_SetRenderScale(myAppState->renderer, scale, scale);
+	const float cx = static_cast<float>(w) / 2.0f / scale;
+	const float cy = static_cast<float>(h) / 2.0f / scale;
 	const char* message = "Hello World!";
-	const float x = (static_cast<float>(w) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
-	const float y = (static_cast<float>(h) / scale - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
+	const float tw = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message);
+	const float th = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+	const float tx = cx - tw / 2.0f;
+	const float ty = cy - th / 2.0f;
 
 	SDL_Surface* surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
-	constexpr int div = 3;
-	const SDL_Rect aroundText = {
-		w / div * 1, h / div * 1,
-		w / div * (div-2), h / div * (div-2),
-	};
 	SDL_ClearSurface(surface, 0.0f, 0.0f, 0.0f, 0.0f);
+
+	/* Draw the message */
+	SDL_SetRenderDrawColor(myAppState->renderer, 0, 0, 0, 255);
+	SDL_RenderClear(myAppState->renderer);
+	SDL_SetRenderDrawColor(myAppState->renderer, 255, 255, 255, 255);
+	SDL_RenderDebugText(myAppState->renderer, tx, ty, message);
+
+	SDL_SetRenderDrawColor(myAppState->renderer, 0, 0, 255, 255);
+	SDL_RenderPoint(myAppState->renderer, cx, cy);
+	SDL_SetRenderDrawColor(myAppState->renderer, 255, 0, 0, 255);
+	SDL_RenderPoint(myAppState->renderer, tx, ty);
+	SDL_RenderPoint(myAppState->renderer, tx + tw-1, ty);
+	SDL_RenderPoint(myAppState->renderer, tx + tw-1, ty + th-1);
+	SDL_RenderPoint(myAppState->renderer, tx, ty + th-1);
+
+	/* Draw a rectangle around the text */
+	const SDL_Rect aroundText = {
+		static_cast<int>(tx * scale),
+		static_cast<int>(ty * scale),
+		static_cast<int>(tw * scale),
+		static_cast<int>(th * scale),
+	};
 	SDL_FillSurfaceRect(surface, &aroundText, SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_GetWindowPixelFormat(myAppState->window)), nullptr, 255, 255, 255, 255));
+
+	/* Finish frame */
 	if (!SDL_SetWindowShape(myAppState->window, surface)) {
 		SDL_Log("Couldn't set window shape: %s", SDL_GetError());
 		SDL_DestroySurface(surface);
 		return SDL_APP_FAILURE;
 	}
 	SDL_DestroySurface(surface);
-
-	/* Draw the message */
-	SDL_SetRenderDrawColor(myAppState->renderer, 0, 0, 0, 255);
-	SDL_RenderClear(myAppState->renderer);
-	SDL_SetRenderDrawColor(myAppState->renderer, 255, 255, 255, 255);
-	SDL_RenderDebugText(myAppState->renderer, x, y, message);
 	SDL_RenderPresent(myAppState->renderer);
 
 	return SDL_APP_CONTINUE;
