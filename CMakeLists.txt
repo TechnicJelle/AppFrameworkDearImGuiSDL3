@@ -12,8 +12,27 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 # Libraries
 
 ## SDL3
-### Find from system
-find_package("SDL3" REQUIRED)
+
+# By configuring CMake with -DUSE_SYSTEM_SDL3=ON/OFF,
+# users can choose between downloading dependencies or using system libraries
+option(USE_SYSTEM_SDL3 "Use the SDL3 install from the system" TRUE)
+
+if (USE_SYSTEM_SDL3)
+	### Find from system
+	find_package("SDL3" REQUIRED)
+else ()
+	# FetchContent downloads and configures dependencies
+	include(FetchContent)
+
+	# SDL3
+	FetchContent_Declare(
+			SDL3
+			GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
+			GIT_TAG "main"
+			EXCLUDE_FROM_ALL
+	)
+	FetchContent_MakeAvailable(SDL3)
+endif ()
 
 ### Link
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
