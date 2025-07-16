@@ -5,6 +5,7 @@
 
 // Dear ImGui
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
@@ -151,23 +152,14 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	}
 	SDL_ClearSurface(programState->surface, 0.0f, 0.0f, 0.0f, 0.0f);
 
-	//TODO (BUG): Does not run for collapsed windows...
-	for (ImDrawList* drawList : ImGui::GetDrawData()->CmdLists) {
-		for (const ImDrawCmd& commandBuffer : drawList->CmdBuffer) {
-			if (commandBuffer.ClipRect.x == 0 && commandBuffer.ClipRect.y == 0 &&
-				commandBuffer.ClipRect.z == static_cast<float>(w) && commandBuffer.ClipRect.w == static_cast<float>(h)) {
-				// If the clip rect covers the entire surface, we can skip it
-				continue;
-			}
-			constexpr float padding = 50.0f; //TODO: Figure out a way to make this not necessary
-			SDL_Rect rect{
-				.x = static_cast<int>(commandBuffer.ClipRect.x - padding),
-				.y = static_cast<int>(commandBuffer.ClipRect.y - padding),
-				.w = static_cast<int>(commandBuffer.ClipRect.z - commandBuffer.ClipRect.x + padding * 2),
-				.h = static_cast<int>(commandBuffer.ClipRect.w - commandBuffer.ClipRect.y + padding * 2)
-			};
-			SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
-		}
+	for (ImGuiContext& imGuiContext = *GImGui; const ImGuiWindow* window : imGuiContext.WindowsFocusOrder) {
+		SDL_Rect rect{
+			.x = static_cast<int>(window->Pos.x),
+			.y = static_cast<int>(window->Pos.y),
+			.w = static_cast<int>(window->Size.x),
+			.h = static_cast<int>(window->Size.y)
+		};
+		SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
 	}
 
 	// Finish frame
