@@ -117,7 +117,7 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+SDL_AppResult SDL_AppEvent([[maybe_unused]] void* appstate, SDL_Event* event) {
 	ImGui_ImplSDL3_ProcessEvent(event);
 	switch (event->type) {
 		case SDL_EVENT_KEY_DOWN:
@@ -188,7 +188,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void* appstate, SDL_AppResult result) {
+void SDL_AppQuit(void* appstate, [[maybe_unused]] SDL_AppResult result) {
 	const ProgramState* programState = static_cast<ProgramState*>(appstate);
 	ImGui_ImplSDLRenderer3_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
