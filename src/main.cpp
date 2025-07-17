@@ -79,8 +79,8 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
 	ProgramState* programState = new ProgramState();
 	*appstate = programState;
 
-	constexpr SDL_WindowFlags flags = SDL_WINDOW_TRANSPARENT | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP;
-	if (!SDL_CreateWindowAndRenderer("Hello World", 1, 1, flags, &programState->window, &programState->renderer)) {
+	if (constexpr SDL_WindowFlags flags = SDL_WINDOW_TRANSPARENT | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP;
+		!SDL_CreateWindowAndRenderer("Hello World", 1, 1, flags, &programState->window, &programState->renderer)) {
 		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
@@ -117,6 +117,7 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
 	return SDL_APP_CONTINUE;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 SDL_AppResult SDL_AppEvent([[maybe_unused]] void* appstate, SDL_Event* event) {
 	ImGui_ImplSDL3_ProcessEvent(event);
 	switch (event->type) {
