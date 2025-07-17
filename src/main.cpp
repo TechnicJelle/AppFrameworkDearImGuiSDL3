@@ -172,7 +172,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 		SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
 	}
 
-	// Finish frame
 	// Only update the shape when necessary
 	if (!std::ranges::equal(programState->previousFrameWindows, thisFrameWindows)) {
 		if (!SDL_SetWindowShape(programState->window, programState->surface)) {
@@ -182,6 +181,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 		programState->previousFrameWindows = std::move(thisFrameWindows);
 	}
 
+	// Finish frame
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), programState->renderer);
 	SDL_RenderPresent(programState->renderer);
 
