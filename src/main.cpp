@@ -157,7 +157,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 			.x = static_cast<int>(window->Pos.x),
 			.y = static_cast<int>(window->Pos.y),
 			.w = static_cast<int>(window->Size.x),
-			.h = static_cast<int>(window->Size.y)
+			.h = static_cast<int>(window->Size.y),
 		};
 		SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
 	}
