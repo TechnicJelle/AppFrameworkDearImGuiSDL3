@@ -9,6 +9,9 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
+// C++
+#include <vector>
+
 
 // Application Code Here
 struct MyAppState {
@@ -63,9 +66,14 @@ struct ProgramState {
 	SDL_Window* window = nullptr;
 	SDL_Renderer* renderer = nullptr;
 	SDL_Surface* surface = nullptr;
+	std::vector<SDL_Rect> previousFrameWindows{};
 
 	MyAppState myAppState;
 };
+
+bool operator==(const SDL_Rect& l, const SDL_Rect& r) {
+	return l.x == r.x && l.y == r.y && l.w == r.w && l.h == r.h;
+}
 
 SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 	ProgramState* programState = new ProgramState();
@@ -152,6 +160,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	}
 	SDL_ClearSurface(programState->surface, 0.0f, 0.0f, 0.0f, 0.0f);
 
+	std::vector<SDL_Rect> thisFrameWindows{};
 	for (ImGuiContext& imGuiContext = *GImGui; const ImGuiWindow* window : imGuiContext.WindowsFocusOrder) {
 		SDL_Rect rect{
 			.x = static_cast<int>(window->Pos.x),
@@ -159,13 +168,18 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 			.w = static_cast<int>(window->Size.x),
 			.h = static_cast<int>(window->Size.y),
 		};
+		thisFrameWindows.push_back(rect);
 		SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
 	}
 
 	// Finish frame
-	if (!SDL_SetWindowShape(programState->window, programState->surface)) {
-		SDL_Log("Couldn't set window shape: %s", SDL_GetError());
-		return SDL_APP_FAILURE;
+	// Only update the shape when necessary
+	if (!std::ranges::equal(programState->previousFrameWindows, thisFrameWindows)) {
+		if (!SDL_SetWindowShape(programState->window, programState->surface)) {
+			SDL_Log("Couldn't set window shape: %s", SDL_GetError());
+			return SDL_APP_FAILURE;
+		}
+		programState->previousFrameWindows = std::move(thisFrameWindows);
 	}
 
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), programState->renderer);
