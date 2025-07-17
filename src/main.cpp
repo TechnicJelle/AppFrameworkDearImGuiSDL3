@@ -159,7 +159,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 		}
 		programState->surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
 	}
-	SDL_ClearSurface(programState->surface, 0.0f, 0.0f, 0.0f, 0.0f);
 
 	std::vector<SDL_Rect> thisFrameWindows{};
 	for (ImGuiContext& imGuiContext = *GImGui; const ImGuiWindow* window : imGuiContext.WindowsFocusOrder) {
@@ -170,11 +169,15 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 			.h = static_cast<int>(window->Size.y),
 		};
 		thisFrameWindows.push_back(rect);
-		SDL_FillSurfaceRect(programState->surface, &rect, 0xFFFFFF);
 	}
 
 	// Only update the shape when necessary
 	if (!std::ranges::equal(programState->previousFrameWindows, thisFrameWindows)) {
+		SDL_ClearSurface(programState->surface, 0.0f, 0.0f, 0.0f, 0.0f);
+		for (SDL_Rect& thisFrameWindow : thisFrameWindows) {
+			SDL_FillSurfaceRect(programState->surface, &thisFrameWindow, 0xFFFFFF);
+		}
+
 		if (!SDL_SetWindowShape(programState->window, programState->surface)) {
 			SDL_Log("Couldn't set window shape: %s", SDL_GetError());
 			return SDL_APP_FAILURE;
